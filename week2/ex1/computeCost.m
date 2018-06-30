@@ -1,4 +1,5 @@
-function J = computeCost(X, y, theta)
-	m = length(y); % number of training examples
-	J = sum((X * theta - y) .^ 2) / (2 * m);
+function cost = computeCost(X, y, theta)
+	examplesCount = length(y);
+	currentError = hypothesisError(X, y, theta);
+	cost = currentError' * currentError / (2 * examplesCount);
 end

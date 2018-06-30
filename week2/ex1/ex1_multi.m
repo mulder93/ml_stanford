@@ -57,43 +57,36 @@ X = [ones(m, 1) X];
 
 %% ================ Part 2: Gradient Descent ================
 
-% ====================== YOUR CODE HERE ======================
-% Instructions: We have provided you with the following starter
-%               code that runs gradient descent with a particular
-%               learning rate (alpha). 
-%
-%               Your task is to first make sure that your functions - 
-%               computeCost and gradientDescent already work with 
-%               this starter code and support multiple variables.
-%
-%               After that, try running gradient descent with 
-%               different values of alpha and see which one gives
-%               you the best result.
-%
-%               Finally, you should complete the code at the end
-%               to predict the price of a 1650 sq-ft, 3 br house.
-%
-% Hint: By using the 'hold on' command, you can plot multiple
-%       graphs on the same figure.
-%
-% Hint: At prediction, make sure you do the same feature normalization.
-%
+fprintf('Plot the convergence graph ...\n');
+
+num_iters = 400;
+start_theta = zeros(3, 1);
+[theta, J1] = gradientDescentMulti(X, y, start_theta, 0.001, num_iters);
+[theta, J2] = gradientDescentMulti(X, y, start_theta, 0.003, num_iters);
+[theta, J3] = gradientDescentMulti(X, y, start_theta, 0.01, num_iters);
+[theta, J4] = gradientDescentMulti(X, y, start_theta, 0.03, num_iters);
+[theta, J5] = gradientDescentMulti(X, y, start_theta, 0.1, num_iters);
+[theta, J6] = gradientDescentMulti(X, y, start_theta, 0.3, num_iters);
+[theta, J7] = gradientDescentMulti(X, y, start_theta, 1, num_iters);
+
+figure;
+plot(1:50, J1(1:50), '-k;0.001;', 'LineWidth', 2);
+xlabel('Number of iterations');
+ylabel('Cost J');
+
+hold on;
+plot(1:50, J2(1:50), '-r;0.003;', 'LineWidth', 2);
+plot(1:50, J3(1:50), '-g;0.01;', 'LineWidth', 2);
+plot(1:50, J4(1:50), '-b;0.03;', 'LineWidth', 2);
+plot(1:50, J5(1:50), '-y;0.1;', 'LineWidth', 2);
+plot(1:50, J6(1:50), '-m;0.3;', 'LineWidth', 2);
+plot(1:50, J7(1:50), '-c;1;', 'LineWidth', 2);
+hold off;
 
 fprintf('Running gradient descent ...\n');
 
-% Choose some alpha value
-alpha = 0.01;
-num_iters = 400;
-
-% Init Theta and Run Gradient Descent 
-theta = zeros(3, 1);
-[theta, J_history] = gradientDescentMulti(X, y, theta, alpha, num_iters);
-
-% Plot the convergence graph
-figure;
-plot(1:numel(J_history), J_history, '-b', 'LineWidth', 2);
-xlabel('Number of iterations');
-ylabel('Cost J');
+alpha = 0.3; % seems good
+[theta, J] = gradientDescentMulti(X, y, start_theta, alpha, num_iters);
 
 % Display gradient descent's result
 fprintf('Theta computed from gradient descent: \n');
@@ -101,11 +94,9 @@ fprintf(' %f \n', theta);
 fprintf('\n');
 
 % Estimate the price of a 1650 sq-ft, 3 br house
-% ====================== YOUR CODE HERE ======================
-% Recall that the first column of X is all-ones. Thus, it does
-% not need to be normalized.
-price = 0; % You should change this
-
+values = ([1650 3] - mu) ./ sigma;
+values = [1 values];
+price = values * theta;
 
 % ============================================================
 
@@ -148,9 +139,8 @@ fprintf('\n');
 
 
 % Estimate the price of a 1650 sq-ft, 3 br house
-% ====================== YOUR CODE HERE ======================
-price = 0; % You should change this
-
+values = [1 1650 3];
+price = values * theta;
 
 % ============================================================
 
