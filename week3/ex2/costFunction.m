@@ -1,8 +1,7 @@
-function [J, grad] = costFunction(theta, X, y)
-    % Initialize some useful values
-    m = length(y); % number of training examples
+function [cost, grad] = costFunction(theta, X, y)
+    examplesCount = length(y);
+    hypothesis = sigmoid(X * theta);
 
-    h = sigmoid(X * theta);
-    J = (-y' * log(h) - (1 - y)' * log(1 - h)) / m;
-    grad = X' * (h - y) / m;
+    cost = (-y' * log(hypothesis) - (1 - y)' * log(1 - hypothesis)) / examplesCount;
+    grad = X' * (hypothesis - y) / examplesCount;
 end
