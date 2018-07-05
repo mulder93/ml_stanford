@@ -1,9 +1,11 @@
-function [J, grad] = lrCostFunction(theta, X, y, lambda)
-	% Initialize some useful values
-	m = length(y); % number of training examples
+function [cost, grad] = lrCostFunction(theta, X, y, lambda)
+    examplesCount = length(y);
+    hypothesis = sigmoid(X * theta);
+    thetaZeroFirst = [0; theta(2:size(theta))];
 
-	% You need to return the following variables correctly 
-	h = sigmoid(X * theta);
-    J = (-y' * log(h) - (1 - y)' * log(1 - h)) / m + lambda * sum((theta .^ 2)(2:size(theta))) / (2 * m);
-    grad = X' * (h - y) / m + lambda * [0;theta(2:size(theta))] / m;
+    cost = (-y' * log(hypothesis) - (1 - y)' * log(1 - hypothesis)) / examplesCount;
+    cost = cost + lambda * thetaZeroFirst' * thetaZeroFirst / (2 * examplesCount); %regularization
+
+    grad = X' * (hypothesis - y) / examplesCount;
+    grad = grad + lambda * thetaZeroFirst / examplesCount; %regularization
 end
