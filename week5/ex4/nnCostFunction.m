@@ -1,61 +1,44 @@
-function [J grad] = nnCostFunction(nn_params, ...
-                                   input_layer_size, ...
-                                   hidden_layer_size, ...
-                                   num_labels, ...
+function [cost grad] = nnCostFunction(nnParams, ...
+                                   inputLayerSize, ...
+                                   hiddenLayerSize, ...
+                                   labelsCount, ...
                                    X, y, lambda)
-%NNCOSTFUNCTION Implements the neural network cost function for a two layer
-%neural network which performs classification
-%   [J grad] = NNCOSTFUNCTON(nn_params, hidden_layer_size, num_labels, ...
-%   X, y, lambda) computes the cost and gradient of the neural network. The
-%   parameters for the neural network are "unrolled" into the vector
-%   nn_params and need to be converted back into the weight matrices. 
-% 
-%   The returned parameter grad should be a "unrolled" vector of the
-%   partial derivatives of the neural network.
-%
+  % Reshape nnParams back into the parameters theta1 and theta2, the weight matrices
+  % for our 2 layer neural network
+  theta1Size = hiddenLayerSize * (inputLayerSize + 1);
+  theta1 = reshape(nnParams(1:theta1Size), hiddenLayerSize, (inputLayerSize + 1));
+  theta2 = reshape(nnParams((theta1Size + 1):end), labelsCount, (hiddenLayerSize + 1));
 
-% Reshape nn_params back into the parameters Theta1 and Theta2, the weight matrices
-% for our 2 layer neural network
-Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
-                 hidden_layer_size, (input_layer_size + 1));
+  examplesCount = size(X, 1);
+  X = [ones(examplesCount, 1) X];
+  cost = 0;
+  theta1Grad = zeros(size(theta1));
+  theta2Grad = zeros(size(theta2));
 
-Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
-                 num_labels, (hidden_layer_size + 1));
+  for i = 1:examplesCount
+      z2 = theta1 * X(i,:)';
+      a2 = [1; sigmoid(z2)];
+      z3 = theta2 * a2;
+      hypothesis = sigmoid(z3);
 
-% Setup some useful variables
-m = size(X, 1);
-         
-% You need to return the following variables correctly 
-J = 0;
-Theta1_grad = zeros(size(Theta1));
-Theta2_grad = zeros(size(Theta2));
+      yi = 1:labelsCount == y(i);
+      delta3 = hypothesis - yi';
+      delta2 = (theta2' * delta3)(2:end) .* sigmoidGradient(z2);
 
-for i = 1:m
-    z2 = Theta1 * [1 X(i,:)]';
-    a2 = sigmoid(z2);
-    z3 = Theta2 * [1; a2];
-    h = sigmoid(z3);
+      bigDelta2 = delta3 * a2';
+      bitDelta1 = delta2 * X(i,:);
 
-    yi = (1:num_labels == y(i))';
-    delta3 = h - yi;
-    delta2 = (Theta2' * delta3)(2:end) .* sigmoidGradient(z2);
+      theta2Grad += bigDelta2 / examplesCount;
+      theta1Grad += bitDelta1 / examplesCount;
 
-    big_delta_2 = delta3 * [1; a2]';
-    big_delta_1 = delta2 * [1 X(i,:)];
+      cost += (yi * log(hypothesis) + (1 - yi) * log(1 - hypothesis)) / (-examplesCount);
+  endfor
 
-    Theta2_grad += big_delta_2 / m;
-    Theta1_grad += big_delta_1 / m;
+  % Regularization
+  cost += (sum(sum(theta1(:,2:end) .^ 2)) + sum(sum(theta2(:,2:end) .^ 2))) * (lambda / (2 * examplesCount));
+  theta2Grad(:,2:end) += lambda * theta2(:,2:end) / examplesCount;
+  theta1Grad(:,2:end) += lambda * theta1(:,2:end) / examplesCount;
 
-    J += (yi' * log(h) + (1 - yi') * log(1 - h)) / (-m);
-endfor
-
-% Regularization
-J += (sum(sum(Theta1(:,[2:end]) .^ 2)) + sum(sum(Theta2(:,[2:end]) .^ 2))) * (lambda / (2 * m));
-Theta2_grad(:,2:end) += lambda * Theta2(:,2:end) / m;
-Theta1_grad(:,2:end) += lambda * Theta1(:,2:end) / m;
-
-% Unroll gradients
-grad = [Theta1_grad(:) ; Theta2_grad(:)];
-
-
+  % Unroll gradients
+  grad = [theta1Grad(:) ; theta2Grad(:)];
 end
